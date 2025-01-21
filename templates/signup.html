@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Roboto+Mono:wght@300&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f7fb;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .signup-container {
+            background-color: #fff;
+            padding: 40px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            color: #1E2A38;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        input, select {
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        button {
+            padding: 12px;
+            background-color: #4C8BF5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #3b74d3;
+        }
+
+        p {
+            text-align: center;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        p a {
+            color: #4C8BF5;
+            text-decoration: none;
+        }
+
+        p a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <h1>Create an Account</h1>
+        <form action="{{ url_for('signup_page') }}" method="POST">
+            <label for="username">Username</label>
+            <input type="text" name="username" placeholder="Username" id="username" required>
+
+            <label for="email">Email</label>
+            <input type="email" name="email" placeholder="Email Address" id="email" required>
+
+            <label for="password">Password</label>
+            <input type="password" name="password" placeholder="Password" id="password" required>
+
+            <label for="role_id">Role</label>
+            <select name="role_id" id="role_id" required>
+                <option value="">-- Select Role --</option>
+                <option value="1">Admin</option>
+                <option value="2">Residence</option>
+                <option value="3">Normal</option>
+            </select>
+
+            <button type="submit">Sign Up</button>
+            <p>Already have an account? <a href="/login">Log In</a></p>
+        </form>
+    </div>
+</body>
+</html>

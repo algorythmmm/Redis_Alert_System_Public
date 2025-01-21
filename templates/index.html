@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensor Data</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4C8BF5;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .user-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #e8f1ff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        .user-details strong {
+            color: #4C8BF5;
+            font-size: 1.1rem;
+        }
+
+        .time-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4C8BF5;
+            color: white;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .sensor-box {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #33C97E, #28a745);
+            color: white;
+            border-radius: 50px;
+            font-size: 1.6rem;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 150px;
+            height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+        }
+
+        .sensor-box:hover {
+            transform: scale(1.05);
+        }
+
+        .temperature-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .temperature-section h3 {
+            color: #555;
+            font-size: 1.2rem;
+        }
+
+        .alert-box {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ff6666;
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+            animation: fade-in 0.5s ease-in-out;
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chart-container {
+            margin-top: 30px;
+            padding: 10px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .temp-count {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #333;
+            text-align: center;
+        }
+
+        .go-back-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 25px;
+            background-color: #4C8BF5;
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+            text-align: center;
+        }
+
+        .go-back-button:hover {
+            background-color: #3b74d3;
+        }
+    </style>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- Time Box in top right -->
+    <div class="time-box" id="time-box"></div>
+
+    <div class="container">
+        <h1>Sensor Dashboard</h1>
+
+        <!-- User Info Section -->
+        {% if resident_name %}
+            <div class="user-details">
+                <strong>{{ resident_name }}</strong>
+                <span>House ID: {{ house_id }}</span>
+                <span>Address: {{ address }}</span>
+                <span>Resident ID: {{ resident_id }}</span>
+                <span>Sensor: {{ sensor }}</span>
+            </div>
+        {% else %}
+            <div class="error">
+                <p>No sensor data available.</p>
+            </div>
+        {% endif %}
+
+        <!-- Temperature Sensor Display in Sensor Box -->
+        <div class="sensor-box" id="sensor-box">
+            <span id="temperature">-</span>°C
+        </div>
+
+        <!-- Last Updated Section -->
+        <div class="temperature-section">
+            <h3>Last Updated: <span id="timestamp">-</span></h3>
+        </div>
+
+        <!-- Alert Box -->
+        <div class="alert-box" id="alert-box">
+            Maximum temperature reached! Open windows to cool the room.
+        </div>
+
+        <!-- Temperature Count -->
+        <div class="temp-count" id="temp-count">
+            Number of times temperature reached 30°C today: 0
+        </div>
+
+        <!-- Chart Container -->
+        <div class="chart-container">
+            <canvas id="temperatureChart"></canvas>
+        </div>
+
+        <!-- Go Back Button -->
+        <div style="text-align: center;">
+            <a href="{{ go_back_url }}" class="go-back-button">Go Back</a>
+        </div>
+    </div>
+
+
+    <script>
+        // Establish socket connection
+        var socket = io();
+
+        // Initialize variables
+        var temperatureData = [];
+        var timestamps = [];
+        var tempCount = 0; // To count occurrences of 30°C
+        var alertTimeout; // To manage alert visibility timeout
+
+        // Format time to HH:MM:SS
+        function formatTime(date) {
+            var hours = date.getHours().toString().padStart(2, '0');
+            var minutes = date.getMinutes().toString().padStart(2, '0');
+            var seconds = date.getSeconds().toString().padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        }
+
+        // Listen for temperature updates
+        socket.on('temperature_update', function(data) {
+            console.log('Received temperature data:', data);
+
+            // Update the temperature
+            document.getElementById('temperature').innerText = data.value;
+
+            // Get current time for "Last Updated" and X-axis labels
+            var now = new Date();
+            var timestamp = now.toISOString().split('T')[0] + ' ' + formatTime(now); // Full timestamp
+            var graphTime = `${now.getHours()}:${now.getSeconds()}`; // HH:SS for X-axis
+
+            document.getElementById('timestamp').innerText = timestamp;
+
+            // Alert if temperature is 30°C
+            if (data.value === 30) {
+                // Display the alert box
+                var alertBox = document.getElementById('alert-box');
+                alertBox.style.display = 'block';
+
+                // Increment the temperature count
+                tempCount++;
+                document.getElementById('temp-count').innerText = `Number of times temperature reached 30°C today: ${tempCount}`;
+
+                // Set timeout to hide the alert box after 3 seconds
+                clearTimeout(alertTimeout); // Clear any previous timeout to reset
+                alertTimeout = setTimeout(function() {
+                    alertBox.style.display = 'none';
+                }, 3000);
+            }
+
+            // Update data for the chart
+            temperatureData.push(data.value);
+            timestamps.push(graphTime);
+
+            // Update the chart with new data
+            updateChart();
+        });
+
+        // Update the time box every second
+        setInterval(function() {
+            var timeBox = document.getElementById('time-box');
+            var now = new Date();
+            timeBox.innerText = formatTime(now);
+        }, 1000);
+
+        // Set up the chart
+        var ctx = document.getElementById('temperatureChart').getContext('2d');
+        var temperatureChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: timestamps,
+                datasets: [{
+                    label: 'Temperature (°C)',
+                    data: temperatureData,
+                    borderColor: '#33C97E',
+                    backgroundColor: 'rgba(51, 201, 126, 0.2)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time (HH:SS)'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Temperature (°C)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Function to update the chart with new data
+        function updateChart() {
+            temperatureChart.update();
+        }
+    </script>
+
+</body>
+</html>

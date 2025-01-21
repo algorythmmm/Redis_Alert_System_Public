@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <style>
+        /* Global Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #F7F9FB;  /* Light Gray Background */
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        h2 {
+            color: #444;
+        }
+        p {
+            font-size: 1.1rem;
+            color: #555;
+        }
+        .error {
+            color: red;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* House Section Styling */
+        .house-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Responsive grid */
+            gap: 20px;
+            justify-items: center; /* Center items horizontally */
+            margin-top: 30px;
+        }
+
+        /* House Box */
+        .house-box {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .house-box:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .house-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #4C8BF5; /* Primary Color */
+        }
+
+        .house-id {
+            font-size: 0.9rem;
+            color: #777;
+        }
+
+        .house-actions {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* Buttons */
+        .house-actions button {
+            padding: 10px;
+            width: 80%;
+            border-radius: 5px;
+            border: none;
+            background-color: #4C8BF5; /* Primary Color */
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .house-actions button:hover {
+            background-color: #3b74d3; /* Darker shade on hover */
+        }
+
+        .delete-button {
+            background-color: #e74c3c; /* Red for delete */
+        }
+
+        .delete-button:hover {
+            background-color: #c0392b; /* Darker red on hover */
+        }
+
+        /* Update Address Form */
+        .house-update-form input {
+            padding: 10px;
+            width: 80%;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        /* Add House Form */
+        .form-container {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .add-house-form input {
+            padding: 10px;
+            width: 80%;
+            margin-right: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .add-house-form button {
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #33C97E; /* Green for add house */
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .add-house-form button:hover {
+            background-color: #28a745; /* Darker green on hover */
+        }
+
+        /* Layout Tweaks */
+        .add-house-form {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 768px) {
+            .dashboard {
+                padding: 20px;
+            }
+            .house-container {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* Adjust grid for small screens */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <h1>Welcome to Admin Dashboard</h1>
+        <p><strong>You are viewing</strong> {{ username }}</p>
+        <p><strong>User ID:</strong> {{ user_id }}</p>
+
+        {% if error %}
+            <div class="error">
+                <p>{{ error }}</p>
+            </div>
+        {% endif %}
+
+        <div class="house-container">
+            <h2>User:{{ user_id }} Houses</h2>
+            {% if houses %}
+                {% for house in houses %}
+                    <div class="house-box">
+                        <!-- House Header with clickable House ID -->
+                        <div class="house-header">
+                            House ID: 
+                            <a href="{{ url_for('house_details', user_id=user_id, house_id=house['id'], username=username) }}" 
+                               style="color: #4C8BF5; text-decoration: none; font-weight: normal;">
+                               {{ house['id'] }}
+                            </a>
+                        </div>
+                        <div>{{ house['address'] }}</div>
+                        <!-- Update House Address Form -->
+                        <div class="house-actions">
+                            <form class="house-update-form" action="{{ url_for('admin_update_house', user_id=user_id, house_id=house['id']) }}" method="POST">
+                                <input type="text" name="address" placeholder="Enter new address" required>
+                                <button type="submit">Update Address</button>
+                            </form>
+
+                            <!-- Delete House Form -->
+                            <form action="{{ url_for('admin_delete_house', user_id=user_id, house_id=house['id']) }}" method="POST">
+                                <button type="submit" class="delete-button">Delete House</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>This user doesn't have any houses yet.</p>
+            {% endif %}
+        </div>
+
+        <div class="form-container">
+            <h2>Add a New House</h2>
+            <!-- Add House Form -->
+            <form class="add-house-form" action="{{ url_for('admin_add_house', user_id=user_id) }}" method="POST">
+                <input type="text" name="address" placeholder="Enter new house address" required>
+                <button type="submit">Add House</button>
+            </form>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <!-- Button to go back to the admin dashboard -->
+            <a href="{{ url_for('admin_dashboard') }}" style="padding: 10px 20px; background-color: #4C8BF5; color: white; text-decoration: none; border-radius: 5px;">Go Back to Admin Dashboard</a>
+        </div>
+
+        <a href="{{ url_for('logout') }}" style="display:block; text-align:center; margin-top: 30px; font-size: 1rem; color: #333;">Logout</a>
+    </div>
+</body>
+</html>

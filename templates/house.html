@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Details</title>
+    <style>
+        /* Global Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4C8BF5;
+            font-size: 2rem;
+        }
+
+        .house-details {
+            margin-top: 20px;
+        }
+
+        .house-details p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #555;
+        }
+
+        .house-details strong {
+            color: #333;
+        }
+
+        .go-back-button {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 12px 25px;
+            background-color: #4C8BF5;
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .go-back-button:hover {
+            background-color: #3b74d3;
+        }
+
+        /* Error Message Styling */
+        .error {
+            text-align: center;
+            color: #e74c3c;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        /* Sensor Section Styling */
+        .sensor-container {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .sensor-box {
+            width: 120px;
+            height: 120px;
+            background-color: #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1rem;
+            color: #333;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .sensor-box:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .add-sensor-button {
+            margin-top: 30px;
+            padding: 12px 25px;
+            background-color: #33C97E;
+            color: white;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .add-sensor-button:hover {
+            background-color: #28a745;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>House Details</h1>
+
+        {% if house %}
+            <div class="house-details">
+                <p><strong>Resident name:</strong> {{ username }}</p>
+                <p><strong>House ID:</strong> {{ house['id'] }}</p>
+                <p><strong>Address:</strong> {{ house['address'] }}</p>
+                <p><strong>Resident ID:</strong> {{ house['user_id'] }}</p>
+            </div>
+        {% else %}
+            <div class="error">
+                <p>{{ error }}</p>
+            </div>
+        {% endif %}
+
+        <!-- Sensor Container -->
+        <div class="sensor-container" id="sensor-container">
+            <!-- Sensors will be dynamically added here -->
+        </div>
+
+        <!-- Add Sensor Button -->
+        <button class="add-sensor-button" id="add-sensor-btn">Add Sensor</button>
+
+        <!-- Go Back Button -->
+        <div style="text-align: center;">
+            <a href="{{ go_back_url }}" class="go-back-button">Go Back</a>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript to add sensors dynamically
+        let sensorCount = 0;
+
+        // Get variables from the current page
+        const residentName = "{{ username }}";
+        const houseId = "{{ house['id'] }}";
+        const address = "{{ house['address'] }}";
+        const residentId = "{{ house['user_id'] }}";
+
+        // Add sensor functionality
+        document.getElementById('add-sensor-btn').addEventListener('click', function() {
+            sensorCount++;  // Increment the sensor count
+            const sensorContainer = document.getElementById('sensor-container');
+
+            // Create a new sensor box with dynamic link
+            const sensorBox = document.createElement('div');
+            sensorBox.classList.add('sensor-box');
+            sensorBox.innerHTML = `
+                Sensor ${sensorCount}<br>
+                <a href="http://127.0.0.1:8080/?resident_name=${residentName}&house_id=${houseId}&address=${address}&resident_id=${residentId}&sensor=${sensorCount}" target="_blank" style="color: #4C8BF5; text-decoration: none;">Link</a>
+            `;
+
+            // Append the new sensor to the container
+            sensorContainer.appendChild(sensorBox);
+        });
+    </script>
+
+</body>
+</html>
