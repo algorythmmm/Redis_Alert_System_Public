@@ -1,15 +1,7 @@
 
-# Real-Time Smart Alert System with Backend Integration and UI
+# Smart Home Alert System with Multi-DB Integration & Real-Time Sensor Alerts
 
-This project integrates multiple modern database technologies and real-time systems to provide a comprehensive smart home management solution. It features a Python-based framework that integrates SQL and MongoDB databases, a Redis Pub/Sub system for real-time sensor alerts, and a role-based UI for admins and residents.
-
-## Features
-- **Role Management**: Admins manage users and houses; residents interact with their data.
-- **CRUD Operations**: Manage users, houses, and sensors.
-- **Real-Time Alerts**: Redis Pub/Sub for live sensor updates and warnings.
-- **Dynamic Frontend**: UI with role-based dashboards for managing houses and sensors.
-
----
+A Python-based system that integrates **PostgreSQL** and **MongoDB** for structured and unstructured data handling, uses **Redis Pub/Sub** for real-time sensor notifications, and features a **Flask-based UI** where users (Admins and Residents) can log in, manage their houses/sensors, and receive live alerts. Includes complete CRUD functionality and role-based dashboards.
 
 ## Prerequisites
 - **Python 3.9+**
