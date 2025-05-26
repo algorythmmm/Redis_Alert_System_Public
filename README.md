@@ -4,12 +4,9 @@
 A Python-based system that integrates **PostgreSQL** and **MongoDB** for structured and unstructured data handling, uses **Redis Pub/Sub** for real-time sensor notifications, and features a **Flask-based UI** where users (Admins and Residents) can log in, manage their houses/sensors, and receive live alerts. Includes complete CRUD functionality and role-based dashboards.
 
 ## Prerequisites
-- **Python 3.9+**
 - **Redis**: Installed and running.
 - **PostgreSQL & MongoDB**: For backend.
 - **Postman & MongoDB Compass**: For testing and database visualization.
-- **Virtual Environment**: For dependency management.
-
 ---
 
 ## Setup and Run Instructions
